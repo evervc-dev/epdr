@@ -108,6 +108,15 @@
                     </svg>
                     Registrar Asistencia
                 </a>
+                <a 
+                    href="{{ route('horarios.index') }}" 
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 {{ request()->routeIs('horarios.index') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/10' : 'hover:bg-slate-800 hover:text-white' }}"
+                >
+                    <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Horarios de Clase
+                </a>
                 @role('admin|director')
                 <a 
                     href="{{ route('asistencias.reporte') }}" 

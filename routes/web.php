@@ -56,6 +56,11 @@ Route::middleware(['auth', 'role:admin|director|docente'])->prefix('asistencias'
     Route::livewire('/', 'pages::asistencias.index')->name('index');
 });
 
+// Schedules (Horarios) Routes
+Route::middleware(['auth', 'role:admin|director|docente'])->prefix('horarios')->name('horarios.')->group(function () {
+    Route::livewire('/', 'pages::horarios.index')->name('index');
+});
+
 Route::middleware(['auth', 'role:admin|director'])->group(function () {
     Route::livewire('/asistencias/reporte', 'pages::asistencias.reporte')->name('asistencias.reporte');
 });

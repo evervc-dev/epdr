@@ -7,6 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property int $personal_id
+ * @property int $materia_id
+ * @property int $seccion_id
+ * @property int $ano_lectivo_id
+ * @property Personal $personal
+ * @property Materia $materia
+ * @property Seccion $seccion
+ * @property AnoLectivo $anoLectivo
+ */
 class AsignacionDocente extends Model
 {
     protected $table = 'asignaciones_docentes';
@@ -36,6 +47,11 @@ class AsignacionDocente extends Model
     public function registroNotas(): HasMany
     {
         return $this->hasMany(RegistroNota::class, 'asignacion_docente_id');
+    }
+
+    public function horarios(): HasMany
+    {
+        return $this->hasMany(HorarioClase::class, 'asignacion_docente_id');
     }
 
     public function scopeDelDocenteActual(Builder $query): Builder
