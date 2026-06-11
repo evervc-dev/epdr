@@ -145,13 +145,13 @@ new class extends Component
 
         if ($this->search) {
             $query->where(function ($q) {
-                $q->where('nombre', 'like', '%' . $this->search . '%')
-                  ->orWhere('codigo', 'like', '%' . $this->search . '%');
+                $q->where('materias.nombre', 'like', '%' . $this->search . '%')
+                  ->orWhere('materias.codigo', 'like', '%' . $this->search . '%');
             });
         }
 
         if ($this->filtroGradoId) {
-            $query->where('grado_id', $this->filtroGradoId);
+            $query->where('materias.grado_id', $this->filtroGradoId);
         }
 
         $materias = $query->join('grados', 'materias.grado_id', '=', 'grados.id')
