@@ -74,8 +74,11 @@ new class extends Component
         }
 
         // 2. Movimientos en el período
+        $desde = Carbon::parse($this->fechaDesde)->startOfDay();
+        $hasta = Carbon::parse($this->fechaHasta)->endOfDay();
+
         $movsQuery = MovimientoInventario::with(['lote.producto', 'registrador'])
-            ->whereBetween('fecha', [$this->fechaDesde, $this->fechaHasta])
+            ->whereBetween('fecha', [$desde, $hasta])
             ->when($this->productoId, function($q) {
                 $q->whereHas('lote', fn($ql) => $ql->where('producto_id', $this->productoId));
             });
@@ -96,9 +99,9 @@ new class extends Component
 
         // 3. Diferencias de auditoría
         $diffsQuery = DetalleAuditoriaBodega::with(['lote.producto', 'auditoria'])
-            ->whereHas('auditoria', function($q) {
+            ->whereHas('auditoria', function($q) use ($desde, $hasta) {
                 $q->where('estado', 'cerrada')
-                  ->whereBetween('fecha_auditoria', [$this->fechaDesde, $this->fechaHasta]);
+                  ->whereBetween('fecha_auditoria', [$desde, $hasta]);
             })
             ->when($this->productoId, function($q) {
                 $q->whereHas('lote', fn($ql) => $ql->where('producto_id', $this->productoId));
