@@ -413,7 +413,7 @@ new class extends Component
                 <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity" aria-hidden="true" wire:click="cerrarVerDetalles"></div>
                 <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
 
-                <div class="inline-block transform overflow-hidden rounded-3xl bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-3xl sm:align-middle border border-slate-100">
+                <div class="relative inline-block transform overflow-hidden rounded-3xl bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-3xl sm:align-middle border border-slate-100">
                     <div class="bg-white px-6 pt-6 pb-4 sm:p-6">
                         <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
                             <div>

@@ -241,7 +241,7 @@ new class extends Component
                 <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
 
                 <!-- Modal box -->
-                <div class="inline-block transform overflow-hidden rounded-3xl bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle border border-slate-100">
+                <div class="relative inline-block transform overflow-hidden rounded-3xl bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle border border-slate-100">
                     <div class="bg-white px-6 pt-6 pb-4 sm:p-6">
                         <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
                             <h3 class="text-lg font-bold text-slate-900" id="modal-title">

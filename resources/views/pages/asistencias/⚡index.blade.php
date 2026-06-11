@@ -82,9 +82,11 @@ new class extends Component
             ->get()
             ->sortBy(fn($m) => $m->estudiante->apellidos . ' ' . $m->estudiante->nombres);
 
+        $fechaObj = \Illuminate\Support\Carbon::parse($this->fecha)->startOfDay();
+
         $existentes = Asistencia::where('materia_id', $asignacion->materia_id)
             ->whereIn('matricula_id', $matriculas->pluck('id'))
-            ->where('fecha', $this->fecha)
+            ->where('fecha', $fechaObj)
             ->get()
             ->keyBy('matricula_id');
 
@@ -130,12 +132,14 @@ new class extends Component
             }
         }
 
-        DB::transaction(function () use ($asignacion) {
+        $fechaObj = \Illuminate\Support\Carbon::parse($this->fecha)->startOfDay();
+
+        DB::transaction(function () use ($asignacion, $fechaObj) {
             foreach ($this->estudiantes as $est) {
                 $record = Asistencia::firstOrNew([
                     'matricula_id' => $est['matricula_id'],
                     'materia_id' => $asignacion->materia_id,
-                    'fecha' => $this->fecha,
+                    'fecha' => $fechaObj,
                 ]);
 
                 $record->fill([

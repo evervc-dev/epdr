@@ -7,6 +7,7 @@ use App\Models\MovimientoInventario;
 use App\Models\Producto;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Livewire\Livewire;
 
 beforeEach(function () {
     $this->seed();
@@ -159,4 +160,24 @@ test('al cerrar una auditoria se crean movimientos de reconciliacion y se actual
     // Fresh stock check on LoteAlimento (calculates peso_total_kg + entries - exits/losses)
     $loteFresh = LoteAlimento::find($lote->id);
     expect($loteFresh->stock_actual)->toBe(90.0);
+});
+
+test('se puede interactuar con el componente de lotes', function () {
+    $admin = User::where('email', 'admin@cepja.edu.sv')->first();
+    $producto = Producto::create([
+        'codigo' => 'PROD-TL1',
+        'nombre' => 'Frijol',
+        'tipo_embalaje' => 'Sacos',
+        'unidad_peso' => 'kg',
+        'peso_por_unidad' => 20.0,
+        'activo' => true,
+    ]);
+
+    Livewire::actingAs($admin)
+        ->test('pages::inventario.lotes')
+        ->set('productoId', $producto->id)
+        ->set('unidadesCompletas', '10')
+        ->assertSet('unidadesCompletas', 10)
+        ->set('unidadesCompletas', '')
+        ->assertSet('unidadesCompletas', null);
 });

@@ -22,10 +22,10 @@ new class extends Component
     public ?int $productoId = null;
     public string $codigoLote = '';
     public string $fechaIngreso = '';
-    public int $cantidadAutorizada = 0;
-    public int $unidadesCompletas = 0;
-    public float $unidadesFraccionadas = 0.0;
-    public float $pesoTotalKg = 0.0;
+    public $cantidadAutorizada = 0;
+    public $unidadesCompletas = 0;
+    public $unidadesFraccionadas = 0.0;
+    public $pesoTotalKg = 0.0;
     public string $observaciones = '';
 
     // Batch movement detail tracking
@@ -119,7 +119,9 @@ new class extends Component
 
         $producto = Producto::find($this->productoId);
         if ($producto) {
-            $unidadesTotal = $this->unidadesCompletas + $this->unidadesFraccionadas;
+            $unidadesComp = is_numeric($this->unidadesCompletas) ? (int)$this->unidadesCompletas : 0;
+            $unidadesFrac = is_numeric($this->unidadesFraccionadas) ? (float)$this->unidadesFraccionadas : 0.0;
+            $unidadesTotal = $unidadesComp + $unidadesFrac;
             $this->pesoTotalKg = round($unidadesTotal * $producto->peso_por_unidad, 3);
         }
     }
@@ -299,7 +301,7 @@ new class extends Component
                 <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity" aria-hidden="true" wire:click="$set('modalAbierto', false)"></div>
                 <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
 
-                <div class="inline-block transform overflow-hidden rounded-3xl bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-xl sm:align-middle border border-slate-100">
+                <div class="relative inline-block transform overflow-hidden rounded-3xl bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-xl sm:align-middle border border-slate-100">
                     <div class="bg-white px-6 pt-6 pb-4 sm:p-6">
                         <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
                             <h3 class="text-lg font-bold text-slate-900" id="modal-title">
@@ -467,7 +469,7 @@ new class extends Component
                 <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity" aria-hidden="true" wire:click="$set('modalMovimientosAbierto', false)"></div>
                 <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
 
-                <div class="inline-block transform overflow-hidden rounded-3xl bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:align-middle border border-slate-100">
+                <div class="relative inline-block transform overflow-hidden rounded-3xl bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:align-middle border border-slate-100">
                     <div class="bg-white px-6 pt-6 pb-4 sm:p-6">
                         <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
                             <div>
