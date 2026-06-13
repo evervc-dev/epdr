@@ -134,6 +134,14 @@ test('puede guardar asistencia dos veces sin error de clave unica', function () 
         'personal_id' => $docente->id,
     ]);
 
+    // Create a schedule for this assignment so it passes validation
+    \App\Models\HorarioClase::create([
+        'asignacion_docente_id' => $asignacion->id,
+        'dia_semana' => 4, // Thursday
+        'hora_inicio' => '07:00:00',
+        'hora_fin' => '08:30:00',
+    ]);
+
     // Ensure there is at least one student matriculado in this section
     $matricula = Matricula::where('seccion_id', $seccion->id)->first();
     if (! $matricula) {
@@ -163,4 +171,131 @@ test('puede guardar asistencia dos veces sin error de clave unica', function () 
         ->call('guardar') // First save
         ->call('guardar') // Second save
         ->assertHasNoErrors();
+
+    expect(Asistencia::where('materia_id', $materia->id)->count())->toBeGreaterThan(0);
 });
+
+test('no puede guardar asistencia los fines de semana', function () {
+    $admin = User::where('email', 'admin@cepja.edu.sv')->first();
+
+    $ano = AnoLectivo::where('activo', true)->first();
+    $grado = Grado::first();
+    $seccion = Seccion::where('grado_id', $grado->id)->first() ?: Seccion::create(['grado_id' => $grado->id, 'ano_lectivo_id' => $ano->id, 'letra' => 'X', 'turno' => 'Mañana']);
+    $materia = Materia::create(['nombre' => 'Materia Finde', 'codigo' => 'MAT_FINDE_'.uniqid(), 'grado_id' => $grado->id]);
+    $docente = Personal::create([
+        'nombres' => 'Juan',
+        'apellidos' => 'Pérez',
+        'dui' => '12345678-'.rand(0, 9),
+        'fecha_nacimiento' => '1980-01-01',
+        'genero' => 'M',
+        'tipo' => 'docente',
+        'fecha_ingreso' => '2020-01-01',
+        'activo' => true,
+    ]);
+    $asignacion = AsignacionDocente::create([
+        'ano_lectivo_id' => $ano->id,
+        'materia_id' => $materia->id,
+        'seccion_id' => $seccion->id,
+        'personal_id' => $docente->id,
+    ]);
+
+    // Ensure there is at least one student
+    $matricula = Matricula::where('seccion_id', $seccion->id)->first();
+    if (! $matricula) {
+        $estudiante = Estudiante::create([
+            'nie' => '1234568',
+            'nombres' => 'María',
+            'apellidos' => 'Gómez',
+            'fecha_nacimiento' => '2015-05-05',
+            'genero' => 'F',
+        ]);
+        $matricula = Matricula::create([
+            'estudiante_id' => $estudiante->id,
+            'seccion_id' => $seccion->id,
+            'ano_lectivo_id' => $ano->id,
+            'tipo_inscripcion' => 'N',
+            'fecha_matricula' => '2026-06-01',
+            'estado' => 'ACTIVA',
+        ]);
+    }
+
+    // June 14, 2026 is a Sunday
+    $fechaFinde = '2026-06-14';
+
+    Livewire::actingAs($admin)
+        ->test('pages::asistencias.index')
+        ->set('asignacionId', $asignacion->id)
+        ->set('fecha', $fechaFinde)
+        ->assertSet('errorFecha', 'No se puede registrar asistencia los fines de semana.')
+        ->call('guardar')
+        ->assertDispatched('notify', message: 'No se puede registrar asistencia los fines de semana.', type: 'error');
+
+    expect(Asistencia::where('materia_id', $materia->id)->where('fecha', $fechaFinde)->count())->toBe(0);
+});
+
+test('no puede guardar asistencia en dias sin horario programado', function () {
+    $admin = User::where('email', 'admin@cepja.edu.sv')->first();
+
+    $ano = AnoLectivo::where('activo', true)->first();
+    $grado = Grado::first();
+    $seccion = Seccion::where('grado_id', $grado->id)->first() ?: Seccion::create(['grado_id' => $grado->id, 'ano_lectivo_id' => $ano->id, 'letra' => 'X', 'turno' => 'Mañana']);
+    $materia = Materia::create(['nombre' => 'Materia Dia Sin Clase', 'codigo' => 'MAT_DSC_'.uniqid(), 'grado_id' => $grado->id]);
+    $docente = Personal::create([
+        'nombres' => 'Juan',
+        'apellidos' => 'Pérez',
+        'dui' => '12345678-'.rand(0, 9),
+        'fecha_nacimiento' => '1980-01-01',
+        'genero' => 'M',
+        'tipo' => 'docente',
+        'fecha_ingreso' => '2020-01-01',
+        'activo' => true,
+    ]);
+    $asignacion = AsignacionDocente::create([
+        'ano_lectivo_id' => $ano->id,
+        'materia_id' => $materia->id,
+        'seccion_id' => $seccion->id,
+        'personal_id' => $docente->id,
+    ]);
+
+    // Create schedule for Thursday (4) only
+    \App\Models\HorarioClase::create([
+        'asignacion_docente_id' => $asignacion->id,
+        'dia_semana' => 4, // Thursday
+        'hora_inicio' => '07:00:00',
+        'hora_fin' => '08:30:00',
+    ]);
+
+    // Ensure there is at least one student
+    $matricula = Matricula::where('seccion_id', $seccion->id)->first();
+    if (! $matricula) {
+        $estudiante = Estudiante::create([
+            'nie' => '1234569',
+            'nombres' => 'Luis',
+            'apellidos' => 'López',
+            'fecha_nacimiento' => '2015-05-05',
+            'genero' => 'M',
+        ]);
+        $matricula = Matricula::create([
+            'estudiante_id' => $estudiante->id,
+            'seccion_id' => $seccion->id,
+            'ano_lectivo_id' => $ano->id,
+            'tipo_inscripcion' => 'N',
+            'fecha_matricula' => '2026-06-01',
+            'estado' => 'ACTIVA',
+        ]);
+    }
+
+    // June 12, 2026 is a Friday (no class scheduled on Friday)
+    $fechaViernes = '2026-06-12';
+
+    Livewire::actingAs($admin)
+        ->test('pages::asistencias.index')
+        ->set('asignacionId', $asignacion->id)
+        ->set('fecha', $fechaViernes)
+        ->assertSet('errorFecha', 'Esta asignatura no tiene clases programadas para el día Viernes.')
+        ->call('guardar')
+        ->assertDispatched('notify', message: 'No hay clases programadas para esta asignatura en el día seleccionado.', type: 'error');
+
+    expect(Asistencia::where('materia_id', $materia->id)->where('fecha', $fechaViernes)->count())->toBe(0);
+});
+
