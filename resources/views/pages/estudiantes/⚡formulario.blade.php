@@ -169,8 +169,21 @@ new class extends Component
             'apellidos' => 'required|string|max:100',
             'fecha_nacimiento' => 'required|date|before:today',
             'genero' => 'required|in:M,F',
-            'actividad_economica' => 'required|string',
-            'convivencia' => 'required|string',
+            'actividad_economica' => [
+                'required',
+                Rule::in([
+                    'No trabaja', 'Caña de azúcar', 'Pesca', 'Pepenador',
+                    'Trabajo doméstico', 'Cohetería', 'Café', 'Trabajos ambulantes',
+                    'Limpia autos/botas', 'Trabajos agrícolas', 'Otros'
+                ])
+            ],
+            'convivencia' => [
+                'required',
+                Rule::in([
+                    'Vive con la madre', 'Vive con el padre', 'Vive con ambos',
+                    'Vive con familiares', 'No vive con familiares'
+                ])
+            ],
         ];
 
         $messages = [
@@ -387,13 +400,15 @@ new class extends Component
                             class="mt-1.5 block w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-950 focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600 sm:text-sm transition"
                         >
                             <option value="No trabaja">No trabaja (Solo estudia)</option>
-                            <option value="Agricultura">Agricultura / Cultivos</option>
-                            <option value="Venta ambulante">Venta ambulante</option>
+                            <option value="Caña de azúcar">Caña de azúcar</option>
+                            <option value="Pesca">Pesca</option>
+                            <option value="Pepenador">Pepenador</option>
                             <option value="Trabajo doméstico">Trabajo doméstico</option>
-                            <option value="Negocio familiar">Ayuda en negocio familiar</option>
-                            <option value="Recolección">Recolección (café, caña, etc.)</option>
-                            <option value="Pesca">Pesca / Mariscos</option>
-                            <option value="Oficios varios">Oficios varios</option>
+                            <option value="Cohetería">Cohetería</option>
+                            <option value="Café">Café</option>
+                            <option value="Trabajos ambulantes">Trabajos ambulantes</option>
+                            <option value="Limpia autos/botas">Limpia autos/botas</option>
+                            <option value="Trabajos agrícolas">Trabajos agrícolas</option>
                             <option value="Otros">Otros</option>
                         </select>
                         <x-input-error field="actividad_economica" />
