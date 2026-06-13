@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             GradosSeccionesSeeder::class,
             MateriasSeeder::class,
             AdminUserSeeder::class,
+            EstudiantesSeeder::class,
         ]);
     }
 }
