@@ -21,6 +21,10 @@ class DatabaseSeeder extends Seeder
             MateriasSeeder::class,
             AdminUserSeeder::class,
             EstudiantesSeeder::class,
+            PersonalDocenteSeeder::class,
+            AsignacionesDocenteSeeder::class,
+            HorariosSeeder::class,
+            ProductosSeeder::class,
         ]);
     }
 }
