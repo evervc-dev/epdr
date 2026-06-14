@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <title>{{ $title ?? config('app.name') }}</title>
+        <link rel="icon" href="{{ asset('mined-logo.png') }}" type="image/png">
 
         <!-- Fonts & CSS/JS -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])

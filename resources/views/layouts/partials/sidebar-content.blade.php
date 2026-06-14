@@ -1,8 +1,8 @@
 <div class="flex flex-col h-full bg-slate-900 text-slate-300">
     <!-- Brand / Header -->
     <div class="flex h-16 shrink-0 items-center px-6 border-b border-slate-800 bg-slate-950/40">
-        <div class="h-9 w-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-black text-lg shadow-md shadow-indigo-500/20 mr-3">
-            SIG
+        <div class="h-9 w-9 flex items-center justify-center mr-3">
+            <img src="{{ asset('mined-logo.png') }}" alt="Logo MINED" class="h-9 w-auto object-contain">
         </div>
         <div>
             <span class="block text-sm font-bold text-white leading-tight">SIG Gerencial</span>
