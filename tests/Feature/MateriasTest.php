@@ -71,3 +71,37 @@ test('puede crear, editar y eliminar una materia', function () {
         'id' => $materia->id,
     ]);
 });
+
+test('puede buscar una materia por nombre o codigo', function () {
+    $admin = User::where('email', 'admin@cepja.edu.sv')->first();
+    $grado = Grado::first();
+
+    $materia1 = Materia::create([
+        'nombre' => 'Matemáticas Especiales',
+        'codigo' => 'MATESP',
+        'grado_id' => $grado->id,
+    ]);
+
+    $materia2 = Materia::create([
+        'nombre' => 'Lenguaje Avanzado',
+        'codigo' => 'LENGAV',
+        'grado_id' => $grado->id,
+    ]);
+
+    // Buscar por nombre
+    Livewire::actingAs($admin)
+        ->test('pages::admin.materias')
+        ->set('search', 'Matemáticas')
+        ->assertViewHas('materias', function ($materias) use ($materia1, $materia2) {
+            return $materias->contains($materia1) && !$materias->contains($materia2);
+        });
+
+    // Buscar por código
+    Livewire::actingAs($admin)
+        ->test('pages::admin.materias')
+        ->set('search', 'LENGAV')
+        ->assertViewHas('materias', function ($materias) use ($materia1, $materia2) {
+            return !$materias->contains($materia1) && $materias->contains($materia2);
+        });
+});
+

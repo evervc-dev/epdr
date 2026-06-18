@@ -13,6 +13,7 @@ new class extends Component
     public ?int $asignacionId = null;
     public string $fecha = '';
     public array $estudiantes = [];
+    public string $errorFecha = '';
 
     public function mount()
     {
@@ -60,6 +61,7 @@ new class extends Component
     public function cargarEstudiantes()
     {
         $this->estudiantes = [];
+        $this->errorFecha = '';
 
         if (!$this->asignacionId || !$this->fecha) {
             return;
@@ -76,13 +78,40 @@ new class extends Component
             }
         }
 
+        // Validar la fecha
+        $fechaObj = \Illuminate\Support\Carbon::parse($this->fecha)->startOfDay();
+
+        // Evitar registros en fin de semana
+        if ($fechaObj->isWeekend()) {
+            $this->errorFecha = 'No se puede registrar asistencia los fines de semana.';
+            return;
+        }
+
+        // Comprobar que existan clases programadas para este día
+        $tieneClase = \App\Models\HorarioClase::where('asignacion_docente_id', $this->asignacionId)
+            ->where('dia_semana', $fechaObj->dayOfWeek)
+            ->exists();
+
+        if (!$tieneClase) {
+            $diasMap = [
+                0 => 'Domingo',
+                1 => 'Lunes',
+                2 => 'Martes',
+                3 => 'Miércoles',
+                4 => 'Jueves',
+                5 => 'Viernes',
+                6 => 'Sábado',
+            ];
+            $nombreDia = $diasMap[$fechaObj->dayOfWeek] ?? '';
+            $this->errorFecha = "Esta asignatura no tiene clases programadas para el día {$nombreDia}.";
+            return;
+        }
+
         $matriculas = Matricula::where('seccion_id', $asignacion->seccion_id)
             ->where('estado', 'ACTIVA')
             ->with('estudiante')
             ->get()
             ->sortBy(fn($m) => $m->estudiante->apellidos . ' ' . $m->estudiante->nombres);
-
-        $fechaObj = \Illuminate\Support\Carbon::parse($this->fecha)->startOfDay();
 
         $existentes = Asistencia::where('materia_id', $asignacion->materia_id)
             ->whereIn('matricula_id', $matriculas->pluck('id'))
@@ -133,6 +162,22 @@ new class extends Component
         }
 
         $fechaObj = \Illuminate\Support\Carbon::parse($this->fecha)->startOfDay();
+
+        // Evitar registros en fin de semana
+        if ($fechaObj->isWeekend()) {
+            $this->dispatch('notify', message: 'No se puede registrar asistencia los fines de semana.', type: 'error');
+            return;
+        }
+
+        // Comprobar que existan clases programadas para este día
+        $tieneClase = \App\Models\HorarioClase::where('asignacion_docente_id', $this->asignacionId)
+            ->where('dia_semana', $fechaObj->dayOfWeek)
+            ->exists();
+
+        if (!$tieneClase) {
+            $this->dispatch('notify', message: 'No hay clases programadas para esta asignatura en el día seleccionado.', type: 'error');
+            return;
+        }
 
         DB::transaction(function () use ($asignacion, $fechaObj) {
             foreach ($this->estudiantes as $est) {
@@ -243,67 +288,77 @@ new class extends Component
 
     <!-- Attendance Grid List -->
     @if($asignacionId)
-        <div class="bg-white rounded-3xl border border-slate-200 shadow-2xs overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-50/50 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                            <th class="px-6 py-4 w-72">Estudiante</th>
-                            <th class="px-6 py-4 w-72 text-center">Estado de Asistencia</th>
-                            <th class="px-6 py-4">Observaciones</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        @forelse($estudiantes as $key => $est)
-                            <tr class="hover:bg-slate-50/15 transition-colors">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-semibold text-slate-900">{{ $est['nombre'] }}</div>
-                                    <div class="text-xs text-slate-450">NIE: {{ $est['nie'] }}</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <div class="inline-flex rounded-xl border border-slate-200 p-1 bg-slate-50 gap-1">
-                                        <button 
-                                            type="button"
-                                            wire:click="$set('estudiantes.{{ $key }}.estado', 'P')"
-                                            class="px-4 py-1.5 text-xs font-bold rounded-lg transition {{ $est['estado'] === 'P' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100' }}"
-                                        >
-                                            Presente
-                                        </button>
-                                        <button 
-                                            type="button"
-                                            wire:click="$set('estudiantes.{{ $key }}.estado', 'A')"
-                                            class="px-4 py-1.5 text-xs font-bold rounded-lg transition {{ $est['estado'] === 'A' ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100' }}"
-                                        >
-                                            Ausente
-                                        </button>
-                                        <button 
-                                            type="button"
-                                            wire:click="$set('estudiantes.{{ $key }}.estado', 'J')"
-                                            class="px-4 py-1.5 text-xs font-bold rounded-lg transition {{ $est['estado'] === 'J' ? 'bg-amber-500 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100' }}"
-                                        >
-                                            Justificado
-                                        </button>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <input 
-                                        type="text" 
-                                        wire:model="estudiantes.{{ $key }}.observacion"
-                                        placeholder="Ej: Retraso justificado, cita médica..."
-                                        class="w-full rounded-xl border border-slate-350 px-4 py-2 text-sm focus:border-indigo-600 focus:outline-hidden focus:ring-1 focus:ring-indigo-600 text-slate-900 transition"
-                                    />
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="3" class="px-6 py-10 text-center text-slate-400 text-sm italic">
-                                    No se encontraron estudiantes activos en esta sección.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+        @if($errorFecha)
+            <div class="rounded-3xl border border-amber-200 bg-amber-50/50 p-8 text-center shadow-2xs">
+                <svg class="mx-auto h-12 w-12 text-amber-500 mb-3" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+                <h3 class="text-base font-bold text-slate-900">Restricción de Fecha</h3>
+                <p class="mt-2 text-sm text-slate-600">{{ $errorFecha }}</p>
             </div>
-        </div>
+        @else
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-2xs overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50/50 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                <th class="px-6 py-4 w-72">Estudiante</th>
+                                <th class="px-6 py-4 w-72 text-center">Estado de Asistencia</th>
+                                <th class="px-6 py-4">Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @forelse($estudiantes as $key => $est)
+                                <tr class="hover:bg-slate-50/15 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-semibold text-slate-900">{{ $est['nombre'] }}</div>
+                                        <div class="text-xs text-slate-450">NIE: {{ $est['nie'] }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        <div class="inline-flex rounded-xl border border-slate-200 p-1 bg-slate-50 gap-1">
+                                            <button 
+                                                type="button"
+                                                wire:click="$set('estudiantes.{{ $key }}.estado', 'P')"
+                                                class="px-4 py-1.5 text-xs font-bold rounded-lg transition {{ $est['estado'] === 'P' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100' }}"
+                                            >
+                                                Presente
+                                            </button>
+                                            <button 
+                                                type="button"
+                                                wire:click="$set('estudiantes.{{ $key }}.estado', 'A')"
+                                                class="px-4 py-1.5 text-xs font-bold rounded-lg transition {{ $est['estado'] === 'A' ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100' }}"
+                                            >
+                                                Ausente
+                                            </button>
+                                            <button 
+                                                type="button"
+                                                wire:click="$set('estudiantes.{{ $key }}.estado', 'J')"
+                                                class="px-4 py-1.5 text-xs font-bold rounded-lg transition {{ $est['estado'] === 'J' ? 'bg-amber-500 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100' }}"
+                                            >
+                                                Justificado
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <input 
+                                            type="text" 
+                                            wire:model="estudiantes.{{ $key }}.observacion"
+                                            placeholder="Ej: Retraso justificado, cita médica..."
+                                            class="w-full rounded-xl border border-slate-350 px-4 py-2 text-sm focus:border-indigo-600 focus:outline-hidden focus:ring-1 focus:ring-indigo-600 text-slate-900 transition"
+                                        />
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="3" class="px-6 py-10 text-center text-slate-400 text-sm italic">
+                                        No se encontraron estudiantes activos en esta sección.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @endif
     @endif
 </div>

@@ -155,6 +155,20 @@ new class extends Component
             return;
         }
 
+        if ($estado === 'ACTIVA') {
+            $alreadyActive = Matricula::where('estudiante_id', $matricula->estudiante_id)
+                ->where('ano_lectivo_id', $matricula->ano_lectivo_id)
+                ->where('estado', 'ACTIVA')
+                ->where('id', '!=', $matricula->id)
+                ->with('seccion')
+                ->first();
+
+            if ($alreadyActive) {
+                $this->dispatch('notify', message: "El estudiante ya tiene una matrícula ACTIVA en la sección {$alreadyActive->seccion->nombre_completo}.", type: 'error');
+                return;
+            }
+        }
+
         $matricula->update(['estado' => $estado]);
 
         $this->dispatch('notify', message: 'Estado de matrícula actualizado con éxito.', type: 'success');

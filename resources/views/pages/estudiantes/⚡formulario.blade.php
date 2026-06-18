@@ -41,7 +41,7 @@ new class extends Component
     {
         if ($id) {
             abort_unless(auth()->user()->can('estudiantes.editar'), 403);
-            
+
             $estudiante = Estudiante::findOrFail($id);
             $this->estudianteId = $estudiante->id;
             $this->nie = $estudiante->nie;
@@ -102,7 +102,7 @@ new class extends Component
     {
         $rules = [
             'tutor_nombre' => 'required|string|max:100',
-            'tutor_parentesco' => 'required|string|max:50',
+            'tutor_parentesco' => 'required|in:Madre,Padre,Abuela,Abuelo,Tía,Tío,Hermana,Hermano,Madrastra,Padrastro,Tutora legal,Tutor legal,Otro',
             'tutor_nivel_academico' => 'required|in:No sabe leer/escribir,Educación Básica,Educación Media,Educación Superior',
             'tutor_situacion_laboral' => 'required|in:Empleado,Comerciante,Oficios varios,No trabaja',
             'tutor_telefono' => 'nullable|string|max:20',
@@ -169,8 +169,21 @@ new class extends Component
             'apellidos' => 'required|string|max:100',
             'fecha_nacimiento' => 'required|date|before:today',
             'genero' => 'required|in:M,F',
-            'actividad_economica' => 'required|string',
-            'convivencia' => 'required|string',
+            'actividad_economica' => [
+                'required',
+                Rule::in([
+                    'No trabaja', 'Caña de azúcar', 'Pesca', 'Pepenador',
+                    'Trabajo doméstico', 'Cohetería', 'Café', 'Trabajos ambulantes',
+                    'Limpia autos/botas', 'Trabajos agrícolas', 'Otros'
+                ])
+            ],
+            'convivencia' => [
+                'required',
+                Rule::in([
+                    'Vive con la madre', 'Vive con el padre', 'Vive con ambos',
+                    'Vive con familiares', 'No vive con familiares'
+                ])
+            ],
         ];
 
         $messages = [
@@ -254,7 +267,7 @@ new class extends Component
         });
 
         $this->dispatch('notify', message: $this->estudianteId ? 'Estudiante actualizado con éxito.' : 'Estudiante registrado con éxito.', type: 'success');
-        
+
         return redirect()->route('estudiantes.index');
     }
 
@@ -279,7 +292,7 @@ new class extends Component
             </p>
         </div>
         <div>
-            <a 
+            <a
                 href="{{ route('estudiantes.index') }}"
                 class="inline-flex items-center gap-2 rounded-xl bg-white hover:bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 border border-slate-300 shadow-2xs transition"
             >
@@ -289,18 +302,18 @@ new class extends Component
     </div>
 
     <form wire:submit.prevent="guardar" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         <!-- Student data column (2/3 width on large screens) -->
         <div class="lg:col-span-2 space-y-6">
             <div class="bg-white rounded-3xl border border-slate-200 shadow-2xs p-6 space-y-6">
                 <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3">Información General</h2>
-                
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- NIE -->
                     <div>
                         <label for="nie" class="block text-sm font-semibold text-slate-700">NIE (Número de Identificación Estudiantil)</label>
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             id="nie"
                             wire:model="nie"
                             placeholder="Ej: 1029384"
@@ -312,7 +325,7 @@ new class extends Component
                     <!-- Género -->
                     <div>
                         <label for="genero" class="block text-sm font-semibold text-slate-700">Género</label>
-                        <select 
+                        <select
                             id="genero"
                             wire:model="genero"
                             class="mt-1.5 block w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-950 focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600 sm:text-sm transition"
@@ -326,8 +339,8 @@ new class extends Component
                     <!-- Nombres -->
                     <div>
                         <label for="nombres" class="block text-sm font-semibold text-slate-700">Nombres</label>
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             id="nombres"
                             wire:model="nombres"
                             placeholder="Nombres del estudiante"
@@ -339,8 +352,8 @@ new class extends Component
                     <!-- Apellidos -->
                     <div>
                         <label for="apellidos" class="block text-sm font-semibold text-slate-700">Apellidos</label>
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             id="apellidos"
                             wire:model="apellidos"
                             placeholder="Apellidos del estudiante"
@@ -352,8 +365,8 @@ new class extends Component
                     <!-- Fecha de Nacimiento -->
                     <div>
                         <label for="fecha_nacimiento" class="block text-sm font-semibold text-slate-700">Fecha de Nacimiento</label>
-                        <input 
-                            type="date" 
+                        <input
+                            type="date"
                             id="fecha_nacimiento"
                             wire:model="fecha_nacimiento"
                             class="mt-1.5 block w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-950 focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600 sm:text-sm transition"
@@ -364,7 +377,7 @@ new class extends Component
                     <!-- Convivencia -->
                     <div>
                         <label for="convivencia" class="block text-sm font-semibold text-slate-700">Convivencia Familiar</label>
-                        <select 
+                        <select
                             id="convivencia"
                             wire:model="convivencia"
                             class="mt-1.5 block w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-950 focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600 sm:text-sm transition"
@@ -381,7 +394,7 @@ new class extends Component
                     <!-- Actividad Económica -->
                     <div>
                         <label for="actividad_economica" class="block text-sm font-semibold text-slate-700">Actividad Económica en que labora</label>
-                        <select 
+                        <select
                             id="actividad_economica"
                             wire:model="actividad_economica"
                             class="mt-1.5 block w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-950 focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600 sm:text-sm transition"
@@ -445,7 +458,7 @@ new class extends Component
             <div class="bg-white rounded-3xl border border-slate-200 shadow-2xs p-6 space-y-6">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                     <h2 class="text-lg font-bold text-slate-900">Tutores Familiares</h2>
-                    <button 
+                    <button
                         type="button"
                         wire:click="abrirModalTutor"
                         class="text-xs font-bold text-indigo-600 hover:text-indigo-500 flex items-center gap-1"
@@ -468,8 +481,8 @@ new class extends Component
                         <div class="relative group rounded-2xl border border-slate-200 p-4 hover:border-slate-300 transition bg-slate-50/30">
                             <!-- Options buttons -->
                             <div class="absolute top-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition duration-150">
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     wire:click="editarTutor({{ $index }})"
                                     class="p-1 text-slate-500 hover:text-indigo-600 hover:bg-white rounded-md transition shadow-2xs"
                                 >
@@ -477,8 +490,8 @@ new class extends Component
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
                                     </svg>
                                 </button>
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     wire:click="desvincularTutor({{ $index }})"
                                     class="p-1 text-slate-500 hover:text-rose-600 hover:bg-white rounded-md transition shadow-2xs"
                                 >
@@ -511,7 +524,7 @@ new class extends Component
                 </div>
 
                 <div class="border-t border-slate-100 pt-5">
-                    <button 
+                    <button
                         type="submit"
                         class="w-full flex justify-center rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:shadow transition duration-150"
                     >
@@ -531,8 +544,8 @@ new class extends Component
         <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
             <div class="relative transform overflow-hidden rounded-3xl bg-white px-6 pb-6 pt-6 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg w-full">
                 <!-- Close Button -->
-                <button 
-                    type="button" 
+                <button
+                    type="button"
                     wire:click="$set('modalTutorAbierto', false)"
                     class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition"
                 >
@@ -549,8 +562,8 @@ new class extends Component
                     <!-- Nombre Completo -->
                     <div>
                         <label for="tutor_nombre" class="block text-sm font-semibold text-slate-700">Nombre Completo</label>
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             id="tutor_nombre"
                             wire:model="tutor_nombre"
                             placeholder="Ej: María Gómez"
@@ -560,23 +573,35 @@ new class extends Component
                     </div>
 
                     <!-- Parentesco -->
-                    <div>
-                        <label for="tutor_parentesco" class="block text-sm font-semibold text-slate-700">Parentesco con el estudiante</label>
-                        <input 
-                            type="text" 
-                            id="tutor_parentesco"
-                            wire:model="tutor_parentesco"
-                            placeholder="Madre, Padre, Abuelo/a, Tío/a, etc."
-                            class="mt-1.5 block w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-950 placeholder:text-slate-400 focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600 sm:text-sm transition"
-                        />
-                        <x-input-error field="tutor_parentesco" />
-                    </div>
+                        <div>
+                            <label for="tutor_parentesco" class="block text-sm font-semibold text-slate-700">Parentesco con el estudiante</label>
+                            <select
+                                id="tutor_parentesco"
+                                wire:model="tutor_parentesco"
+                                class="mt-1.5 block w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-950 focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600 sm:text-sm transition"
+                            >
+                                <option value="Madre">Madre</option>
+                                <option value="Padre">Padre</option>
+                                <option value="Abuela">Abuela</option>
+                                <option value="Abuelo">Abuelo</option>
+                                <option value="Tía">Tía</option>
+                                <option value="Tío">Tío</option>
+                                <option value="Hermana">Hermana</option>
+                                <option value="Hermano">Hermano</option>
+                                <option value="Madrastra">Madrastra</option>
+                                <option value="Padrastro">Padrastro</option>
+                                <option value="Tutora legal">Tutora legal</option>
+                                <option value="Tutor legal">Tutor legal</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                            <x-input-error field="tutor_parentesco" />
+                        </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Nivel Académico -->
                         <div>
                             <label for="tutor_nivel_academico" class="block text-sm font-semibold text-slate-700">Nivel Académico</label>
-                            <select 
+                            <select
                                 id="tutor_nivel_academico"
                                 wire:model="tutor_nivel_academico"
                                 class="mt-1.5 block w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-950 focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600 sm:text-sm transition"
@@ -592,7 +617,7 @@ new class extends Component
                         <!-- Situación Laboral -->
                         <div>
                             <label for="tutor_situacion_laboral" class="block text-sm font-semibold text-slate-700">Situación Laboral</label>
-                            <select 
+                            <select
                                 id="tutor_situacion_laboral"
                                 wire:model="tutor_situacion_laboral"
                                 class="mt-1.5 block w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-950 focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600 sm:text-sm transition"
@@ -610,8 +635,8 @@ new class extends Component
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                         <div>
                             <label for="tutor_telefono" class="block text-sm font-semibold text-slate-700">Teléfono</label>
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 id="tutor_telefono"
                                 wire:model="tutor_telefono"
                                 placeholder="Ej: 7777-7777"
@@ -630,14 +655,14 @@ new class extends Component
                     </div>
 
                     <div class="mt-6 flex flex-row-reverse gap-2">
-                        <button 
+                        <button
                             type="submit"
                             class="inline-flex justify-center rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition"
                         >
                             Listo
                         </button>
-                        <button 
-                            type="button" 
+                        <button
+                            type="button"
                             wire:click="$set('modalTutorAbierto', false)"
                             class="inline-flex justify-center rounded-xl bg-white hover:bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 border border-slate-300 transition duration-150"
                         >

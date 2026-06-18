@@ -105,12 +105,24 @@ new class extends Component
         abort_unless(auth()->user()->can('inventario.movimientos'), 403);
 
         $this->validate([
-            'loteId' => 'required|exists:lotes_alimentos,id',
-            'tipoMovimiento' => 'required|in:entrada,salida,merma',
-            'cantidad' => 'required|numeric|min:0.01',
-            'unidad' => 'required|string|max:10',
-            'fecha' => 'required|date',
-            'observaciones' => 'required|string|max:500',
+            'loteId'          => 'required|exists:lotes_alimentos,id',
+            'tipoMovimiento'  => 'required|in:entrada,salida,merma',
+            'cantidad'        => 'required|numeric|min:0.01',
+            'unidad'          => 'required|string|max:10',
+            'fecha'           => 'required|date',
+            'observaciones'   => 'required|string|max:500',
+        ], [
+            'loteId.required'        => 'El lote de alimento es obligatorio.',
+            'loteId.exists'          => 'El lote seleccionado no es válido.',
+            'tipoMovimiento.required' => 'El tipo de movimiento es obligatorio.',
+            'cantidad.required'      => 'La cantidad es obligatoria.',
+            'cantidad.numeric'       => 'La cantidad debe ser un número válido.',
+            'cantidad.min'           => 'La cantidad debe ser al menos 0.01.',
+            'unidad.required'        => 'La unidad de peso es obligatoria.',
+            'fecha.required'         => 'La fecha del movimiento es obligatoria.',
+            'fecha.date'             => 'La fecha ingresada no es válida.',
+            'observaciones.required' => 'Las observaciones son obligatorias.',
+            'observaciones.max'      => 'Las observaciones no pueden superar los 500 caracteres.',
         ]);
 
         $lote = LoteAlimento::findOrFail($this->loteId);
@@ -156,7 +168,7 @@ new class extends Component
             <p class="mt-1 text-sm text-slate-500">Registre entradas, salidas y mermas de alimentos, y mantenga el control de stock.</p>
         </div>
         <div>
-            <button 
+            <button
                 type="button"
                 wire:click="abrirModal()"
                 class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:shadow transition duration-150"
@@ -174,7 +186,7 @@ new class extends Component
         <!-- Tipo Movimiento Filter -->
         <div class="w-full sm:w-48">
             <label for="filter_tipo" class="sr-only">Tipo Movimiento</label>
-            <select 
+            <select
                 id="filter_tipo"
                 wire:model.live="filtroTipo"
                 class="block w-full rounded-xl border border-slate-350 bg-white px-3 py-2.5 text-slate-900 focus:border-indigo-600 focus:outline-hidden focus:ring-1 focus:ring-indigo-600 sm:text-sm transition"
@@ -188,7 +200,7 @@ new class extends Component
         <!-- Producto Filter -->
         <div class="w-full sm:w-64">
             <label for="filter_prod" class="sr-only">Filtrar por Producto</label>
-            <select 
+            <select
                 id="filter_prod"
                 wire:model.live="filtroProductoId"
                 class="block w-full rounded-xl border border-slate-350 bg-white px-3 py-2.5 text-slate-900 focus:border-indigo-600 focus:outline-hidden focus:ring-1 focus:ring-indigo-600 sm:text-sm transition"
@@ -281,8 +293,8 @@ new class extends Component
                             <h3 class="text-lg font-bold text-slate-900">
                                 Registrar Movimiento de Inventario
                             </h3>
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 wire:click="$set('modalAbierto', false)"
                                 class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
                             >
@@ -296,7 +308,7 @@ new class extends Component
                             <!-- Lote -->
                             <div>
                                 <label for="form_lote" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Lote de Alimento</label>
-                                <select 
+                                <select
                                     id="form_lote"
                                     wire:model.live="loteId"
                                     class="block w-full rounded-xl border @error('loteId') border-rose-500 focus:ring-rose-500 focus:border-rose-500 @else border-slate-300 focus:ring-indigo-600 focus:border-indigo-600 @enderror bg-white px-3 py-2.5 text-slate-950 focus:outline-hidden sm:text-sm transition"
@@ -315,7 +327,7 @@ new class extends Component
                                 <!-- Tipo Movimiento -->
                                 <div>
                                     <label for="form_tipo" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tipo de Movimiento</label>
-                                    <select 
+                                    <select
                                         id="form_tipo"
                                         wire:model="tipoMovimiento"
                                         class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-950 focus:border-indigo-600 focus:outline-hidden focus:ring-1 focus:ring-indigo-600 sm:text-sm transition"
@@ -332,9 +344,9 @@ new class extends Component
                                 <!-- Fecha -->
                                 <div>
                                     <label for="form_fecha" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Fecha del Movimiento</label>
-                                    <input 
+                                    <input
                                         id="form_fecha"
-                                        type="date" 
+                                        type="date"
                                         wire:model="fecha"
                                         class="block w-full rounded-xl border @error('fecha') border-rose-500 focus:ring-rose-500 focus:border-rose-500 @else border-slate-300 focus:ring-indigo-600 focus:border-indigo-600 @enderror bg-white px-3 py-2.5 text-slate-950 focus:outline-hidden sm:text-sm transition"
                                     />
@@ -348,9 +360,9 @@ new class extends Component
                                 <!-- Cantidad -->
                                 <div>
                                     <label for="form_cant" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Cantidad</label>
-                                    <input 
+                                    <input
                                         id="form_cant"
-                                        type="number" 
+                                        type="number"
                                         step="0.01"
                                         wire:model="cantidad"
                                         class="block w-full rounded-xl border @error('cantidad') border-rose-500 focus:ring-rose-500 focus:border-rose-500 @else border-slate-300 focus:ring-indigo-600 focus:border-indigo-600 @enderror bg-white px-3 py-2.5 text-slate-950 focus:outline-hidden sm:text-sm transition"
@@ -364,9 +376,9 @@ new class extends Component
                                 <!-- Unidad -->
                                 <div>
                                     <label for="form_unidad" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Unidad de Peso</label>
-                                    <input 
+                                    <input
                                         id="form_unidad"
-                                        type="text" 
+                                        type="text"
                                         wire:model="unidad"
                                         class="block w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-500 focus:outline-hidden sm:text-sm font-semibold"
                                         readonly
@@ -377,7 +389,7 @@ new class extends Component
                             <!-- Observaciones / Razón -->
                             <div>
                                 <label for="form_obs" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Razón u Observaciones</label>
-                                <textarea 
+                                <textarea
                                     id="form_obs"
                                     wire:model="observaciones"
                                     rows="3"
@@ -391,14 +403,14 @@ new class extends Component
 
                             <!-- Modal Actions -->
                             <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-5 mt-6">
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     wire:click="$set('modalAbierto', false)"
                                     class="rounded-xl border border-slate-350 bg-white hover:bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 transition"
                                 >
                                     Cancelar
                                 </button>
-                                <button 
+                                <button
                                     type="submit"
                                     class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow-xs transition"
                                 >

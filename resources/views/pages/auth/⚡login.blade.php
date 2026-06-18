@@ -51,8 +51,8 @@ new class extends Component
 
 <div class="bg-white/95 border border-slate-200 rounded-3xl shadow-xl p-8 sm:p-10 transition-all duration-300">
     <div class="text-center mb-8">
-        <div class="mx-auto h-14 w-14 rounded-2xl bg-indigo-600 flex items-center justify-center text-white font-extrabold text-2xl shadow-lg shadow-indigo-100">
-            SIG
+        <div class="mx-auto h-24 w-auto flex items-center justify-center">
+            <img src="{{ asset('mined-logo-blue.png') }}" alt="Logo MINED" class="h-24 w-auto object-contain">
         </div>
         <h2 class="mt-5 text-2xl font-bold tracking-tight text-slate-900">Centro Escolar "Pablo J. Aguirre"</h2>
         <p class="mt-2 text-sm text-slate-500 font-medium">Sistema de Información Gerencial</p>
