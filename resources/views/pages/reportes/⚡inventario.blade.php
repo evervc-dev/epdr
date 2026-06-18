@@ -57,7 +57,7 @@ new class extends Component
             $productoNombre = $p ? $p->nombre : '';
         }
 
-        // 1. Estado de lotes
+        // Obtener el estado actual de los lotes
         $lotesQuery = LoteAlimento::with('producto')
             ->when($this->productoId, fn($q) => $q->where('producto_id', $this->productoId));
         
@@ -73,7 +73,7 @@ new class extends Component
             ];
         }
 
-        // 2. Movimientos en el período
+        // Consultar los movimientos dentro del período
         $desde = Carbon::parse($this->fechaDesde)->startOfDay();
         $hasta = Carbon::parse($this->fechaHasta)->endOfDay();
 
@@ -97,7 +97,7 @@ new class extends Component
             ];
         }
 
-        // 3. Diferencias de auditoría
+        // Cargar discrepancias reportadas en las auditorías
         $diffsQuery = DetalleAuditoriaBodega::with(['lote.producto', 'auditoria'])
             ->whereHas('auditoria', function($q) use ($desde, $hasta) {
                 $q->where('estado', 'cerrada')

@@ -78,16 +78,16 @@ new class extends Component
             }
         }
 
-        // Validate date
+        // Validar la fecha
         $fechaObj = \Illuminate\Support\Carbon::parse($this->fecha)->startOfDay();
 
-        // 1. Weekend check
+        // Evitar registros en fin de semana
         if ($fechaObj->isWeekend()) {
             $this->errorFecha = 'No se puede registrar asistencia los fines de semana.';
             return;
         }
 
-        // 2. Schedule check
+        // Comprobar que existan clases programadas para este día
         $tieneClase = \App\Models\HorarioClase::where('asignacion_docente_id', $this->asignacionId)
             ->where('dia_semana', $fechaObj->dayOfWeek)
             ->exists();
@@ -163,13 +163,13 @@ new class extends Component
 
         $fechaObj = \Illuminate\Support\Carbon::parse($this->fecha)->startOfDay();
 
-        // 1. Weekend check
+        // Evitar registros en fin de semana
         if ($fechaObj->isWeekend()) {
             $this->dispatch('notify', message: 'No se puede registrar asistencia los fines de semana.', type: 'error');
             return;
         }
 
-        // 2. Schedule check
+        // Comprobar que existan clases programadas para este día
         $tieneClase = \App\Models\HorarioClase::where('asignacion_docente_id', $this->asignacionId)
             ->where('dia_semana', $fechaObj->dayOfWeek)
             ->exists();

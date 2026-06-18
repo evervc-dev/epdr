@@ -39,18 +39,18 @@ new class extends Component
 
     public function mount()
     {
-        // 1. General Info
+        // Obtener información general del año lectivo
         $ano = AnoLectivo::where('activo', true)->first();
         $this->anioActivo = $ano ? (string)$ano->anio : 'Ninguno';
 
-        // 2. Admin Calculations
+        // Estadísticas y métricas globales de administración
         $this->totalUsers = User::count();
         $this->totalEstudiantes = Matricula::where('estado', 'ACTIVA')
             ->when($ano, fn($q) => $q->where('ano_lectivo_id', $ano->id))
             ->count();
         $this->totalPersonal = Personal::where('activo', true)->count();
 
-        // 3. Director Calculations
+        // Estadísticas específicas para la dirección
         $this->matriculaActiva = $this->totalEstudiantes;
 
         $notas = RegistroNota::whereHas('asignacionDocente', function($q) use ($ano) {
@@ -66,7 +66,7 @@ new class extends Component
         $lastAudit = AuditoriaBodega::orderBy('fecha_auditoria', 'desc')->first();
         $this->estadoBodega = $lastAudit ? ($lastAudit->estado === 'cerrada' ? 'Óptimo' : 'En Auditoría') : 'Sin registros';
 
-        // 4. Docente Calculations
+        // Cargar métricas y clases asignadas al docente
         $personal = auth()->user()->personal;
         if ($personal) {
             $this->misSecciones = AsignacionDocente::where('personal_id', $personal->id)
@@ -94,7 +94,7 @@ new class extends Component
             }
         }
 
-        // 5. Bodega Calculations
+        // Calcular inventario y niveles críticos en bodega
         $lotes = LoteAlimento::all();
         $stockPorProducto = [];
         foreach ($lotes as $lote) {
