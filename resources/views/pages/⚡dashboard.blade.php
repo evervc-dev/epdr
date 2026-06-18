@@ -39,18 +39,18 @@ new class extends Component
 
     public function mount()
     {
-        // 1. General Info
+        // Obtener información general del año lectivo
         $ano = AnoLectivo::where('activo', true)->first();
         $this->anioActivo = $ano ? (string)$ano->anio : 'Ninguno';
 
-        // 2. Admin Calculations
+        // Estadísticas y métricas globales de administración
         $this->totalUsers = User::count();
         $this->totalEstudiantes = Matricula::where('estado', 'ACTIVA')
             ->when($ano, fn($q) => $q->where('ano_lectivo_id', $ano->id))
             ->count();
         $this->totalPersonal = Personal::where('activo', true)->count();
 
-        // 3. Director Calculations
+        // Estadísticas específicas para la dirección
         $this->matriculaActiva = $this->totalEstudiantes;
 
         $notas = RegistroNota::whereHas('asignacionDocente', function($q) use ($ano) {
@@ -66,7 +66,7 @@ new class extends Component
         $lastAudit = AuditoriaBodega::orderBy('fecha_auditoria', 'desc')->first();
         $this->estadoBodega = $lastAudit ? ($lastAudit->estado === 'cerrada' ? 'Óptimo' : 'En Auditoría') : 'Sin registros';
 
-        // 4. Docente Calculations
+        // Cargar métricas y clases asignadas al docente
         $personal = auth()->user()->personal;
         if ($personal) {
             $this->misSecciones = AsignacionDocente::where('personal_id', $personal->id)
@@ -94,7 +94,7 @@ new class extends Component
             }
         }
 
-        // 5. Bodega Calculations
+        // Calcular inventario y niveles críticos en bodega
         $lotes = LoteAlimento::all();
         $stockPorProducto = [];
         foreach ($lotes as $lote) {
@@ -399,7 +399,7 @@ new class extends Component
                     <span class="text-xs font-bold text-slate-950">Gestionar Usuarios</span>
                 </a>
                 @endrole
-
+                @role('docente' | 'director' | 'admin')
                 <a href="{{ route('horarios.index') }}" class="flex flex-col items-center justify-center p-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-indigo-50/20 hover:border-indigo-200 text-center transition-all duration-150">
                     <div class="h-10 w-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -408,15 +408,7 @@ new class extends Component
                     </div>
                     <span class="text-xs font-bold text-slate-950">Ver Horarios</span>
                 </a>
-
-                <a href="mailto:soporte@cepja.edu.sv" class="flex flex-col items-center justify-center p-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-indigo-50/20 hover:border-indigo-200 text-center transition-all duration-150">
-                    <div class="h-10 w-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                    </div>
-                    <span class="text-xs font-bold text-slate-950">Ayuda y Soporte</span>
-                </a>
+                @endrole
             </div>
         </div>
 
@@ -437,7 +429,7 @@ new class extends Component
                         <svg class="h-5 w-5 text-indigo-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-1.514 2.018a14.992 14.992 0 01-8.184-8.184l2.018-1.514c.362-.272.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
                         </svg>
-                        <span>+503 0000-0000</span>
+                        <span>+503 2660-0670</span>
                     </div>
                 </div>
             </div>

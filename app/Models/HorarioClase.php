@@ -37,7 +37,7 @@ class HorarioClase extends Model
     {
         $asig = AsignacionDocente::findOrFail($asignacionDocenteId);
 
-        // 1. Docente collision: same teacher, same day, overlapping times
+        // Validar traslape de horario para el mismo docente
         $docenteId = $asig->personal_id;
         $docenteConflict = self::where('dia_semana', $diaSemana)
             ->where('id', '!=', $ignoreId)
@@ -57,7 +57,7 @@ class HorarioClase extends Model
             return "Conflicto de Docente: El docente {$conflictAsig->personal->nombre_completo} ya tiene asignada la materia '{$conflictAsig->materia->nombre}' en la sección '{$conflictAsig->seccion->nombre_completo}' el mismo día de ".substr($docenteConflict->hora_inicio, 0, 5).' a '.substr($docenteConflict->hora_fin, 0, 5).'.';
         }
 
-        // 2. Section collision: same section, same day, overlapping times
+        // Validar traslape de horario para la misma sección
         $seccionId = $asig->seccion_id;
         $seccionConflict = self::where('dia_semana', $diaSemana)
             ->where('id', '!=', $ignoreId)

@@ -91,30 +91,30 @@ new class extends Component
             return;
         }
 
-        // 1. Initial Enrolled
+        // Matrícula histórica inicial registrada
         $matriculaInicial = Matricula::where('seccion_id', $this->seccionId)->count();
 
-        // 2. Currently Active Enrolled
+        // Estudiantes activos en el sistema
         $matriculaActual = Matricula::where('seccion_id', $this->seccionId)->where('estado', 'ACTIVA')->count();
 
-        // 3. Desertores (withdrawn, transferred, inactive)
+        // Desertores (retirados, trasladados o inactivos)
         $desertores = Matricula::where('seccion_id', $this->seccionId)
             ->whereIn('estado', ['RETIRADO', 'TRASLADADO', 'INACTIVA'])
             ->count();
 
-        // 4. Extraedad (Active)
+        // Alumnos activos en situación de extraedad
         $sobredad = Matricula::where('seccion_id', $this->seccionId)
             ->where('estado', 'ACTIVA')
             ->whereHas('estudiante', fn($q) => $q->where('tiene_extraedad', true))
             ->count();
 
-        // 5. Repitentes (Active)
+        // Alumnos activos con condición de repitente
         $repitentes = Matricula::where('seccion_id', $this->seccionId)
             ->where('estado', 'ACTIVA')
             ->whereHas('estudiante', fn($q) => $q->where('es_repitente', true))
             ->count();
 
-        // 6. Calculate Approved / Failed by Gender
+        // Determinar aprobados y reprobados por género
         $aprobadosM = 0;
         $aprobadosF = 0;
         $reprobadosM = 0;
